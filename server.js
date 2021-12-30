@@ -1,8 +1,10 @@
 //* Imports
+const apiRoutes = require('./routes/apiRoutes');
+const htmlRoutes = require('./routes/htmlRoutes');
 const express = require("express");
-const fs = require('fs');
-const path = require('path');
-const {animals} = require('./data/animals.json');
+// const fs = require('fs');
+// const path = require('path');
+// const {animals} = require('./data/animals.json');
 
 
 //* Variables
@@ -18,130 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // Allows us to use non-specified static files
 app.use(express.static('public'));
-
-
-
-//* Functions
-
-//^ Gets query params
-function filterByQuery(query, animalsArray){
-    let personalityTraitsArray = [];
-    let filteredResults = animalsArray;
-
-    // Checks to see if personalityTraits is a single trait or an array
-    if(query.personalityTraits){
-        if(typeof query.personalityTraits === "string"){
-            personalityTraitsArray = [query.personalityTraits];
-        }else {
-            personalityTraitsArray = query.personalityTraits;
-        }
-    }
-
-    // Loop through personalityTraitsArray and returns the filtered result that has each trait
-    personalityTraitsArray.forEach((trait)=>{
-        filteredResults = filteredResults.filter(animal => animal.personalityTraits.indexOf(trait) !== -1);
-    })
-
-    // Checks to see if the param entered is the same as the object property then returns a new array with only those values
-    if(query.diet){
-        filteredResults = filteredResults.filter((animal)=>animal.diet === query.diet);
-    }
-    if(query.species){
-        filteredResults = filteredResults.filter((animal)=>animal.species === query.species);
-    }
-    if(query.name){
-        filteredResults = filteredResults.filter((animal)=>animal.name === query.name);
-    }
-    return filteredResults;
-}
-
-//^ Gets ID params
-function findById(id, animalsArray){
-    const result = animalsArray.filter(animal => animal.id === id)[0];
-    return result;
-} 
-
-//^ Posts new animal data
-function createNewAnimal(body, animalsArray){
-    const animal = body;
-    animalsArray.push(animal);
-
-    // The null argument means we don't want to edit any of our existing data; if we did, we could pass something in there. The 2 indicates we want to create white space between our values to make it more readable.
-    fs.writeFileSync(
-        path.join(__dirname, './data/animals.json'), 
-        JSON.stringify({animals: animalsArray}, null, 2)
-        );
-
-    return body;
-}
-
-//^ Validate animal data
-function validateAnimal(animal){
-    if(!animal.name || typeof animal.name !== 'string') return false;
-    if(!animal.species || typeof animal.species !== 'string') return false;
-    if(!animal.diet || typeof animal.diet !== 'string') return false;
-    if(!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) return false;
-
-    return true;
-}
-
-//* Routes
-
-//& GET all animals
-app.get("/api/animals", function(req,res){
-    let results = animals;
-    if(req.query){
-        results = filterByQuery(req.query, results);
-    }
-    res.json(results);
-});
-
-//& GET specific params
-app.get("/api/animals/:id", function(req,res){
-    const result = findById(req.params.id, animals);
-    if(result) return res.json(result);
-    else return res.send(404 + " Sorry, we can't seem to find what you're searching for ");
-});
-
-
-//& POST client data 
-app.post("/api/animals", function(req,res){
-    // set id based on what the next index of the array will be
-    req.body.id = animals.length.toString();
-
-    // if any data in req.body is incorrect, send 400 error back
-    if(!validateAnimal(req.body)){
-        res.status(400).send("The animal is not properly formatted");
-    }else{
-        // set id based on what the next index of the array will be
-        const animal = createNewAnimal(req.body, animals);
-    
-        res.json(animal);
-    }
-});
-
-//& GET home route
-app.get("/", function(req,res){
-    // I think using path will automatically fix the path thus we can use ./
-    res.sendFile(path.join(__dirname, "./public/index.html"));
-});
-
-//& GET animals route
-app.get("/animals", function(req,res){
-   res.sendFile(path.join(__dirname, './public/animals.html'));
-});
-
-//& GET zookeepers route
-app.get("/zookeepers", function(req,res){
-    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
-});
-
-//& Wildcard Routes
-// The * will act as a wildcard, meaning any route that wasn't previously 
-// defined will fall under this request and will receive the homepage as the response. 
-app.get("*", function(req,res){
-    res.sendFile(path.join(__dirname, "./public/index.html"));
-});
+// Tells the server that any time a client navigates to <ourhost>/api, the app will use the 
+// router we set up in apiRoutes. If '/' is the endpoint, then the router will serve back our HTML routes.
+app.use('/api', apiRoutes);
+app.use('/', htmlRoutes);
 
 //* Tell server to listen for requests
 app.listen(PORT, function(){
