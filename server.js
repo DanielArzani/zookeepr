@@ -16,6 +16,8 @@ const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
 app.use(express.json());
+// Allows us to use non-specified static files
+app.use(express.static('public'));
 
 
 
@@ -83,9 +85,9 @@ function validateAnimal(animal){
     return true;
 }
 
-//* GET Routes
+//* Routes
 
-//^ GET all animals
+//& GET all animals
 app.get("/api/animals", function(req,res){
     let results = animals;
     if(req.query){
@@ -94,15 +96,13 @@ app.get("/api/animals", function(req,res){
     res.json(results);
 });
 
-//^ GET specific params
+//& GET specific params
 app.get("/api/animals/:id", function(req,res){
     const result = findById(req.params.id, animals);
     if(result) return res.json(result);
     else return res.send(404 + " Sorry, we can't seem to find what you're searching for ");
 });
 
-
-//* POST Routes
 
 //& POST client data 
 app.post("/api/animals", function(req,res){
@@ -120,9 +120,30 @@ app.post("/api/animals", function(req,res){
     }
 });
 
+//& GET home route
+app.get("/", function(req,res){
+    // I think using path will automatically fix the path thus we can use ./
+    res.sendFile(path.join(__dirname, "./public/index.html"));
+});
 
+//& GET animals route
+app.get("/animals", function(req,res){
+   res.sendFile(path.join(__dirname, './public/animals.html'));
+});
 
-// Tell server to listen for requests
+//& GET zookeepers route
+app.get("/zookeepers", function(req,res){
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+
+//& Wildcard Routes
+// The * will act as a wildcard, meaning any route that wasn't previously 
+// defined will fall under this request and will receive the homepage as the response. 
+app.get("*", function(req,res){
+    res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
+//* Tell server to listen for requests
 app.listen(PORT, function(){
     console.log(`API server now on port 3001!`);
 });
