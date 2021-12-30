@@ -46,6 +46,12 @@ function filterByQuery(query, animalsArray){
     return filteredResults;
 }
 
+//^ Gets ID params
+function findById(id, animalsArray){
+    const result = animalsArray.filter(animal => animal.id === id)[0];
+    return result;
+} 
+
 //* Routes
 
 //^ All animals route
@@ -57,6 +63,12 @@ app.get("/api/animals", function(req,res){
     res.json(results);
 });
 
+//^ Specific params route
+app.get("/api/animals/:id", function(req,res){
+    const result = findById(req.params.id, animals);
+    if(result) return res.json(result);
+    else return res.send(404 + " Sorry, we can't seem to find what you're searching for ");
+});
 
 // Tell server to listen for requests
 app.listen(PORT, function(){
