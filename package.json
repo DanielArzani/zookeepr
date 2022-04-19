@@ -1,5 +1,6 @@
 {
   "name": "zookeepr",
+  "homepage": "https://mighty-stream-63444.herokuapp.com/",
   "version": "1.0.0",
   "description": "Sends animal data as requested by the client",
   "main": "server.js",
@@ -16,7 +17,6 @@
   "bugs": {
     "url": "https://github.com/DanielArzani/zookeepr/issues"
   },
-  "homepage": "https://github.com/DanielArzani/zookeepr#readme",
   "dependencies": {
     "express": "^4.17.2"
   },
